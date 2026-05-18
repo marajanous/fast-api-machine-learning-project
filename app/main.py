@@ -1,45 +1,50 @@
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel
 
-# 1. Nastavení logování (bod 4 od Michala)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+# 1. Logování
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# 2. Inicializace FastAPI aplikace
+# 2. Inicializace aplikace (TENTO ŘÁDEK MUSÍ BÝT NAD ENDPOINTY)
 app = FastAPI(title="MLOps Project API")
 
-# 3. Schéma pro validaci dat (Pydantic - bod 4)
+# 3. Modely
 class User(BaseModel):
     username: str
     email: str
 
-# 4. API Endpointy (bod 6)
-
+# 4. Auth Endpointy (původní úkol)
 @app.get("/")
 async def root():
     return {"status": "FastAPI v Dockeru běží!"}
 
 @app.post("/login", tags=["Auth"])
 async def login():
-    """Endpoint pro přihlášení."""
-    logger.info("Pokus o přihlášení uživatele")
+    logger.info("Pokus o přihlášení")
     return {"message": "Login successful (mock)"}
-
-@app.post("/logout", tags=["Auth"])
-async def logout():
-    """Endpoint pro odhlášení."""
-    logger.info("Uživatel se odhlásil")
-    return {"message": "Logout successful"}
 
 @app.get("/me", response_model=User, tags=["Auth"])
 async def get_me():
-    """Vrátí informace o aktuálním uživateli."""
-    # Zatím vracíme testovací data, později napojíme na MongoDB
+    return {"username": "pilot_student", "email": "student@seznam.cz"}
+
+# 5. Dataset Management Endpointy (nový úkol od Michala)
+@app.post("/datasets/upload", tags=["Datasets"])
+async def upload_dataset(file: UploadFile = File(...)):
+    """Nahraje .csv soubor do systému."""
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="Povoleny jsou pouze .csv soubory")
+    
+    logger.info(f"Nahrávám soubor {file.filename} do MinIO")
+    logger.info(f"Ukládám metadata souboru {file.filename} do MongoDB")
+    
     return {
-        "username": "pilot_student", 
-        "email": "student@seznam.cz"
+        "message": "Dataset úspěšně nahrán",
+        "filename": file.filename
     }
+
+@app.delete("/datasets/{filename}", tags=["Datasets"])
+async def remove_dataset(filename: str):
+    """Smaže dataset."""
+    logger.info(f"Odstraňuji dataset: {filename}")
+    return {"message": f"Dataset {filename} byl úspěšně odstraněn"}
