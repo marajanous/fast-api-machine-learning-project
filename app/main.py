@@ -6,7 +6,7 @@ from pydantic import BaseModel
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# 2. Inicializace aplikace (TENTO ŘÁDEK MUSÍ BÝT NAD ENDPOINTY)
+# 2. Inicializace aplikace 
 app = FastAPI(title="MLOps Project API")
 
 # 3. Modely
@@ -14,7 +14,7 @@ class User(BaseModel):
     username: str
     email: str
 
-# 4. Auth Endpointy (původní úkol)
+# 4. Auth Endpointy 
 @app.get("/")
 async def root():
     return {"status": "FastAPI v Dockeru běží!"}
@@ -28,7 +28,7 @@ async def login():
 async def get_me():
     return {"username": "pilot_student", "email": "student@seznam.cz"}
 
-# 5. Dataset Management Endpointy (nový úkol od Michala)
+# 5. Dataset Management Endpointy 
 @app.post("/datasets/upload", tags=["Datasets"])
 async def upload_dataset(file: UploadFile = File(...)):
     """Nahraje .csv soubor do systému."""
