@@ -24,6 +24,11 @@ async def login():
     logger.info("Pokus o přihlášení")
     return {"message": "Login successful (mock)"}
 
+@app.post("/logout", tags=["Auth"])
+async def logout():
+    logger.info("Uživatel se odhlásil")
+    return {"message": "Logout successful"}
+
 @app.get("/me", response_model=User, tags=["Auth"])
 async def get_me():
     return {"username": "pilot_student", "email": "student@seznam.cz"}
