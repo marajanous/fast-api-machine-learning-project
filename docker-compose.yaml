@@ -52,6 +52,7 @@ services:
       - "8000:8000"
     volumes:
       - ./app:/code/app
+      - ./docs:/code/docs
     environment:
       - MONGO_URI=mongodb://root:password@mongodb:27017/
       - MINIO_ENDPOINT=minio:9000
