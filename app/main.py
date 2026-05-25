@@ -1,47 +1,55 @@
 import logging
+import os
+import json
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from app.infrastructure.clients.mongodb import mongo_manager
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from fastapi.openapi.utils import get_openapi
+from app.infrastructure.clients.mongodb import _client
 from app.infrastructure.clients.minio import minio_manager
-from app.routers import auth, datasets
+from app.api.routers import auth, datasets
+from app.infrastructure.services.domain_exception import DomainException
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    
     try:
-        logger.info("Spouštím inicializaci infrastruktury v čisté architektuře...")
-        mongo_manager.connect()  
+        logger.info("Starting infrastructure initialization in clean architecture...")
+        _client.connect()  
         minio_manager.connect()  
     except Exception as e:
-        logger.error(f"Kritická chyba při startu aplikace: {e}")
+        logger.error(f"Critical error during application startup: {e}")
     
     yield  
     
-    logger.info("Ukončuji aplikaci a čistím prostředky...")
-    mongo_manager.close()  
+    logger.info("Shutting down application and cleaning up resources...")
+    _client.close()  
 
 app = FastAPI(
     title="MLOps Project API",
-    description="Robustní vrstvená architektura splňující SOLID principy a FastAPI standardy.",
+    description="Robust layered architecture compliant with SOLID principles and FastAPI standards.",
     version="2.0.0",
     lifespan=lifespan
 )
 
+@app.exception_handler(DomainException)
+async def domain_exception_handler(request: Request, exc: DomainException):
+    logger.warning(f"Domain error caught: {exc.message}")
+    return JSONResponse(
+        status_code=400,
+        content={"status": "error", "detail": exc.message}
+    )
+
 @app.get("/")
 async def root():
-    return {"status": "FastAPI v Dockeru běží v čisté architektuře!"}
+    return {"status": "FastAPI in Docker is running in clean architecture!"}
 
 app.include_router(auth.router)
 app.include_router(datasets.router)
 
-import os
-import json
-from fastapi.openapi.utils import get_openapi
-
-def ulozi_automatickou_dokumentaci():
+def save_automatic_documentation():
     os.makedirs("docs", exist_ok=True)
     
     openapi_schema = get_openapi(
@@ -53,4 +61,4 @@ def ulozi_automatickou_dokumentaci():
     with open("docs/openapi.json", "w", encoding="utf-8") as f:
         json.dump(openapi_schema, f, indent=2, ensure_ascii=False)
 
-ulozi_automatickou_dokumentaci()
+save_automatic_documentation()

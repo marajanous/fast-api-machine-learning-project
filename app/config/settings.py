@@ -22,12 +22,20 @@ class Settings(BaseSettings):
         alias="MINIO_ROOT_PASSWORD"
     )
 
+    secret_key: str = Field(
+        default="SUPER_SECRET_KEY_123_ABC", 
+        alias="JWT_SECRET_KEY"
+    )
+    algorithm: str = Field(
+        default="HS256", 
+        alias="JWT_ALGORITHM"
+    )
+
     @field_validator("minio_endpoint")
     @classmethod
     def validate_endpoint_format(cls, v: str) -> str:
-    
         if ":" not in v:
-            raise ValueError("Konfigurace koncového bodu musí obsahovat platný oddělovač portů (':').")
+            raise ValueError("Endpoint configuration must contain a valid port separator (':').")
         return v
 
     model_config = SettingsConfigDict(

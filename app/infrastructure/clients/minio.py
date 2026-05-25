@@ -11,7 +11,7 @@ class MinioClientManager:
 
     def connect(self):
         try:
-            logger.info("Připojování k MinIO...")
+            logger.info("Connecting to MinIO...")
             self.client = boto3.client(
                 's3',
                 endpoint_url=f"http://{settings.minio_endpoint}",
@@ -20,9 +20,9 @@ class MinioClientManager:
                 config=Config(signature_version='s3v4'),
                 region_name='us-east-1'
             )
-            logger.info("MinIO klient úspěšně inicializován.")
+            logger.info("MinIO client successfully initialized.")
         except Exception as e:
-            logger.error(f"Kritická chyba při připojování k MinIO: {e}")
+            logger.error(f"Critical error connecting to MinIO: {e}")
             raise e
 
 minio_manager = MinioClientManager()

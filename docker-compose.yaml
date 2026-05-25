@@ -12,7 +12,7 @@ services:
     volumes:
       - mongo_data:/data/db
     networks:
-      - app-network
+      - app-network 
 
   mongo-express:
     image: mongo-express:latest
@@ -28,7 +28,7 @@ services:
     ports:
       - "8081:8081"
     networks:
-      - app-network
+      - app-network  # 👈 Spojeno do sítě
 
   minio:
     image: minio/minio:latest
@@ -43,7 +43,7 @@ services:
       MINIO_ROOT_PASSWORD: minioadminpassword
     command: server /data --console-address ":9001"
     networks:
-      - app-network
+      - app-network  
 
   web:
     build: .
@@ -53,16 +53,20 @@ services:
     volumes:
       - ./app:/code/app
       - ./docs:/code/docs
+      - ./tests:/code/tests
+    command: sh -c "python -m app.utils.seed && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     environment:
       - MONGO_URI=mongodb://root:password@mongodb:27017/
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ROOT_USER=minioadmin
       - MINIO_ROOT_PASSWORD=minioadminpassword
     depends_on:
-      - mongodb
-      - minio
+      mongodb:
+        condition: service_started
+      minio:
+        condition: service_started
     networks:
-      - app-network
+      - app-network  
 
 volumes:
   mongo_data:
@@ -70,4 +74,4 @@ volumes:
 
 networks:
   app-network:
-    driver: bridge
+    driver: bridge  
