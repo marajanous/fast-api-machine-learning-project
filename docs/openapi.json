@@ -270,6 +270,166 @@
           }
         }
       }
+    },
+    "/model/info": {
+      "get": {
+        "tags": [
+          "Models"
+        ],
+        "summary": "Get Models Info",
+        "operationId": "get_models_info_model_info_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModelInfo"
+                  },
+                  "type": "array",
+                  "title": "Response Get Models Info Model Info Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/model/{model_name}/train/{dataset_id}": {
+      "post": {
+        "tags": [
+          "Models"
+        ],
+        "summary": "Train Model",
+        "operationId": "train_model_model__model_name__train__dataset_id__post",
+        "parameters": [
+          {
+            "name": "model_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Model Name"
+            }
+          },
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dataset Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/model/task/{task_id}/status": {
+      "get": {
+        "tags": [
+          "Models"
+        ],
+        "summary": "Get Task Status",
+        "operationId": "get_task_status_model_task__task_id__status_get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/model/{task_id}/result": {
+      "get": {
+        "tags": [
+          "Models"
+        ],
+        "summary": "Get Training Result",
+        "operationId": "get_training_result_model__task_id__result_get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -391,6 +551,72 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "ModelInfo": {
+        "properties": {
+          "model_name": {
+            "type": "string",
+            "title": "Model Name",
+            "description": "Unique name of the machine learning model"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Short overview of what the model does"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_name",
+          "description"
+        ],
+        "title": "ModelInfo"
+      },
+      "TaskStatusResponse": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id",
+            "description": "Identifier of the task"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Current state of the task (pending, running, completed)"
+          },
+          "model_name": {
+            "type": "string",
+            "title": "Model Name",
+            "description": "Name of the trained model"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id",
+            "description": "ID of the dataset used for training"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_id",
+          "status",
+          "model_name",
+          "dataset_id"
+        ],
+        "title": "TaskStatusResponse"
+      },
+      "TrainResponse": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id",
+            "description": "Identifier of the asynchronous background training task"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "title": "TrainResponse"
       },
       "UploadResponse": {
         "properties": {

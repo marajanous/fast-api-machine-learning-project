@@ -2,13 +2,14 @@ import logging
 import os
 import json
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.openapi.utils import get_openapi
 from app.infrastructure.clients.mongodb import _client
 from app.infrastructure.clients.minio import minio_manager
 from app.api.routers import auth, datasets
 from app.infrastructure.services.domain_exception import DomainException
+from app.api.routers import auth, datasets, models
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,8 +38,13 @@ app = FastAPI(
 @app.exception_handler(DomainException)
 async def domain_exception_handler(request: Request, exc: DomainException):
     logger.warning(f"Domain error caught: {exc.message}")
+    
+    status_code = status.HTTP_400_BAD_REQUEST
+    if exc.__class__.__name__ == "DatasetNotFoundException":
+        status_code = status.HTTP_404_NOT_FOUND
+        
     return JSONResponse(
-        status_code=400,
+        status_code=status_code,
         content={"status": "error", "detail": exc.message}
     )
 
@@ -48,6 +54,7 @@ async def root():
 
 app.include_router(auth.router)
 app.include_router(datasets.router)
+app.include_router(models.router)
 
 def save_automatic_documentation():
     os.makedirs("docs", exist_ok=True)
